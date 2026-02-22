@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% block title %}{{ university.name }} — AISITY{% endblock %}
+
+{% block content %}
+<div class="detail-wrapper">
+    <a href="{% url 'home' %}" class="back-link">← Back to Universities</a>
+
+    <div class="detail-header">
+        <div class="detail-logo">
+            {% if university.logo %}
+            <img src="{{ university.logo.url }}" alt="{{ university.name }} logo">
+            {% else %}
+            <div class="uni-logo-placeholder large">{{ university.name|slice:":2"|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="detail-title">
+            <h1>{{ university.name }}</h1>
+            <p class="detail-location">📍 {{ university.city }}, {{ university.country }}</p>
+            <div class="detail-badges">
+                <span class="meta-badge meta-fee">💰 ${{ university.tuition_fee }} / year</span>
+                <span class="meta-badge meta-duration">⏱ {{ university.duration }}</span>
+                <span class="meta-badge meta-degree">🎓 {{ university.get_degree_level_display }}</span>
+                {% if university.dormitory_available %}
+                <span class="meta-badge meta-dorm meta-dorm-yes">🏠 Dormitory Available</span>
+                {% else %}
+                <span class="meta-badge meta-dorm meta-dorm-no">🏠 No Dormitory</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="detail-actions">
+            {% if is_saved %}
+            <a href="{% url 'remove_university' university.pk %}?next=university_detail" class="btn-saved btn-large">✓ Saved</a>
+            {% else %}
+            <a href="{% url 'add_university' university.pk %}?next=university_detail" class="btn-add btn-large">+ Add to My List</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if university.description %}
+    <div class="detail-section">
+        <h2>About</h2>
+        <p class="detail-description">{{ university.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Info Grid: Scholarships + Admission Requirements -->
+    <div class="detail-info-grid">
+
+        <!-- Scholarships -->
+        <div class="detail-section">
+            <h2>🏅 Scholarships</h2>
+            {% with scholarships=university.scholarship_list %}
+            {% if scholarships %}
+            <ul class="scholarship-list">
+                {% for s in scholarships %}
+                <li class="scholarship-item">
+                    <span class="scholarship-icon">🎓</span>
+                    <span>{{ s }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="info-empty">No scholarships listed for this university.</p>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Admission Requirements -->
+        <div class="detail-section">
+            <h2>📋 Admission Requirements</h2>
+            <div class="admission-list">
+                <!-- IELTS -->
+                <div class="admission-item {% if university.ielts_required %}req-required{% else %}req-not-required{% endif %}">
+                    <div class="admission-label">
+                        <span class="req-icon">📝</span>
+                        <span class="req-name">IELTS</span>
+                    </div>
+                    {% if university.ielts_required %}
+                    <div class="admission-value">
+                        <span class="req-status req-yes">Required</span>
+                        {% if university.ielts_score %}
+                        <span class="req-score">Min. score: <strong>{{ university.ielts_score }}</strong></span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="admission-value">
+                        <span class="req-status req-no">Not Required</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- SAT -->
+                <div class="admission-item {% if university.sat_required %}req-required{% else %}req-not-required{% endif %}">
+                    <div class="admission-label">
+                        <span class="req-icon">📝</span>
+                        <span class="req-name">SAT</span>
+                    </div>
+                    {% if university.sat_required %}
+                    <div class="admission-value">
+                        <span class="req-status req-yes">Required</span>
+                        {% if university.sat_score %}
+                        <span class="req-score">Min. score: <strong>{{ university.sat_score }}</strong></span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="admission-value">
+                        <span class="req-status req-no">Not Required</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Dormitory -->
+                <div class="admission-item {% if university.dormitory_available %}req-required{% else %}req-not-required{% endif %}">
+                    <div class="admission-label">
+                        <span class="req-icon">🏠</span>
+                        <span class="req-name">Dormitory</span>
+                    </div>
+                    <div class="admission-value">
+                        {% if university.dormitory_available %}
+                        <span class="req-status req-yes">Available</span>
+                        {% else %}
+                        <span class="req-status req-no">Not Available</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="detail-section">
+        <h2>📚 Faculties & Programs</h2>
+        {% if faculties %}
+        <div class="faculty-grid">
+            {% for faculty in faculties %}
+            <div class="faculty-card">
+                <div class="faculty-icon">📖</div>
+                <div class="faculty-info">
+                    <h3>{{ faculty.name }}</h3>
+                    <span class="faculty-degree">{{ faculty.get_degree_level_display }}</span>
+                    {% if faculty.description %}
+                    <p>{{ faculty.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-faculties">No faculties listed yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- ============================================================
+         REVIEWS SECTION
+    ============================================================ -->
+    <div class="reviews-section" id="reviews">
+
+        <!-- Section header + stats -->
+        <div class="reviews-header">
+            <div class="reviews-header-left">
+                <h2>⭐ Student Reviews</h2>
+                <span class="reviews-count">{{ review_count }} review{{ review_count|pluralize }}</span>
+            </div>
+            {% if not user_review %}
+            <a href="{% url 'add_review' university.pk %}" class="btn-primary">✏️ Write a Review</a>
+            {% else %}
+            <div class="review-user-actions">
+                <a href="{% url 'edit_review' university.pk user_review.pk %}" class="btn-outline">✏️ Edit My Review</a>
+                <a href="{% url 'delete_review' university.pk user_review.pk %}" class="btn-remove">🗑 Delete</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if review_count %}
+        <!-- Aggregate stats bar -->
+        <div class="reviews-stats">
+            <div class="reviews-avg">
+                <span class="avg-number">{{ avg_rating }}</span>
+                <div class="avg-stars">
+                    {% for i in "12345" %}
+                    <span class="stat-star {% if forloop.counter <= avg_rating|floatformat:"0" %}star-filled{% else %}star-empty{% endif %}">★</span>
+                    {% endfor %}
+                </div>
+                {% if recommend_pct is not None %}
+                <span class="avg-recommend">{{ recommend_pct }}% recommend</span>
+                {% endif %}
+            </div>
+            <div class="rating-breakdown">
+                {% for rb in rating_breakdown %}
+                <div class="rb-row">
+                    <span class="rb-label">{{ rb.star }}★</span>
+                    <div class="rb-bar-wrap">
+                        <div class="rb-bar" style="width: {{ rb.pct }}%"></div>
+                    </div>
+                    <span class="rb-count">{{ rb.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Filter / sort bar -->
+        <form method="get" action="#reviews" class="reviews-filter-bar">
+            <!-- preserve non-review GET params (search etc. from home → not present here but safe) -->
+            <div class="reviews-filter-group">
+                <label>Rating:</label>
+                <select name="filter_rating" class="filter-select-sm review-filter-select">
+                    <option value="" {% if not filter_rating %}selected{% endif %}>All</option>
+                    {% for i in "54321" %}
+                    <option value="{{ i }}" {% if filter_rating == i %}selected{% endif %}>{{ i }} Stars</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="reviews-filter-group">
+                <label>Recommend:</label>
+                <select name="filter_recommend" class="filter-select-sm review-filter-select">
+                    <option value="" {% if not filter_recommend %}selected{% endif %}>All</option>
+                    <option value="yes" {% if filter_recommend == "yes" %}selected{% endif %}>Yes</option>
+                    <option value="no"  {% if filter_recommend == "no"  %}selected{% endif %}>No</option>
+                </select>
+            </div>
+            <div class="reviews-filter-group">
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="filter_verified" value="1" {% if filter_verified == "1" %}checked{% endif %}>
+                    Verified Participants only
+                </label>
+            </div>
+            <div class="reviews-filter-group">
+                <label>Sort:</label>
+                <select name="sort_reviews" class="filter-select-sm review-filter-select">
+                    <option value="newest"  {% if sort_reviews == "newest"  %}selected{% endif %}>Newest</option>
+                    <option value="highest" {% if sort_reviews == "highest" %}selected{% endif %}>Highest Rating</option>
+                    <option value="lowest"  {% if sort_reviews == "lowest"  %}selected{% endif %}>Lowest Rating</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary btn-sm">Apply</button>
+            <a href="{% url 'university_detail' university.pk %}#reviews" class="btn-secondary btn-sm">Clear</a>
+        </form>
+
+        <!-- Review cards -->
+        <div class="review-list">
+            {% for review in reviews %}
+            <div class="review-card">
+
+                <!-- Review card header -->
+                <div class="review-card-header">
+                    <div class="review-meta-left">
+                        <div class="reviewer-avatar">{{ review.user.first_name|slice:":1"|upper }}{{ review.user.last_name|slice:":1"|upper }}</div>
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">{{ review.user.get_full_name|default:review.user.username }}</span>
+                            <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="review-meta-right">
+                        {% if review.is_verified %}
+                        <span class="verified-badge">✔ Verified Participant</span>
+                        {% endif %}
+                        <div class="review-stars">
+                            {% for i in "12345" %}
+                            <span class="{% if forloop.counter <= review.rating %}star-filled{% else %}star-empty{% endif %}">★</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title + recommend -->
+                <div class="review-title-row">
+                    <h3 class="review-title">{{ review.title }}</h3>
+                    <span class="review-recommend {% if review.recommend == 'yes' %}recommend-yes{% else %}recommend-no{% endif %}">
+                        {% if review.recommend == 'yes' %}👍 Recommends{% else %}👎 Does not recommend{% endif %}
+                    </span>
+                </div>
+
+                <!-- Experience -->
+                <p class="review-experience">{{ review.experience }}</p>
+
+                <!-- Pros & Cons grid -->
+                <div class="review-pros-cons">
+                    <div class="pros-box">
+                        <div class="pros-cons-label pros-label">✅ Pros</div>
+                        <ul class="pros-cons-list">
+                            {% for line in review.pros.splitlines %}{% if line.strip %}<li>{{ line.strip }}</li>{% endif %}{% endfor %}
+                        </ul>
+                    </div>
+                    <div class="cons-box">
+                        <div class="pros-cons-label cons-label">❌ Cons</div>
+                        <ul class="pros-cons-list">
+                            {% for line in review.cons.splitlines %}{% if line.strip %}<li>{{ line.strip }}</li>{% endif %}{% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tips (optional) -->
+                {% if review.tips %}
+                <div class="review-tips">
+                    <div class="tips-label">💡 Tips for future applicants</div>
+                    <p>{{ review.tips }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Edit / Delete (own reviews only) -->
+                {% if review.user == request.user %}
+                <div class="review-own-actions">
+                    <a href="{% url 'edit_review' university.pk review.pk %}" class="btn-outline btn-sm">✏️ Edit</a>
+                    <a href="{% url 'delete_review' university.pk review.pk %}" class="btn-remove btn-sm">🗑 Delete</a>
+                </div>
+                {% endif %}
+
+            </div>
+            {% empty %}
+            <div class="reviews-empty">
+                <span>😶 No reviews match your filters.</span>
+                <a href="{% url 'university_detail' university.pk %}#reviews" class="clear-filters-link">Clear filters</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- No reviews yet -->
+        <div class="reviews-empty reviews-empty-large">
+            <span class="reviews-empty-icon">📝</span>
+            <p>No reviews yet. Be the first to share your experience!</p>
+            {% if not user_review %}
+            <a href="{% url 'add_review' university.pk %}" class="btn-primary" style="margin-top:12px">Write a Review</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div><!-- /reviews-section -->
+</div>
+{% endblock %}

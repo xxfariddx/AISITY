@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}AI Consultant — AISITY{% endblock %}
+
+{% block content %}
+<div class="chat-home-wrapper">
+
+    <!-- Hero -->
+    <div class="chat-home-hero">
+        <div class="chat-hero-icon">🤖</div>
+        <div class="chat-hero-text">
+            <h1>AI Consultant <span class="ai-badge">AI</span></h1>
+            <p>Your personal university counselor. Ask me anything about choosing a university, major, scholarships, or admission requirements.</p>
+        </div>
+        <form method="post" class="chat-new-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary btn-large">+ New Conversation</button>
+        </form>
+    </div>
+
+    <!-- Suggestion chips -->
+    <div class="ai-suggestions">
+        <p class="suggestions-label">💡 Try asking:</p>
+        <div class="suggestion-chips">
+            <span class="chip">Which university has the lowest tuition?</span>
+            <span class="chip">Compare BHOS and ADA University</span>
+            <span class="chip">Which universities don't require IELTS?</span>
+            <span class="chip">Best programs for Computer Science</span>
+            <span class="chip">What scholarships can I apply for?</span>
+            <span class="chip">Should I study in Azerbaijan or abroad?</span>
+            <span class="chip">I have DİM score 550 — where can I study?</span>
+        </div>
+    </div>
+
+    <!-- Past sessions -->
+    {% if sessions %}
+    <div class="chat-sessions-section">
+        <h2>Your Conversations <span class="reviews-count">{{ sessions.count }}</span></h2>
+        <div class="chat-sessions-list">
+            {% for s in sessions %}
+            <div class="chat-session-card">
+                <a href="{% url 'chat_session' s.pk %}" class="session-link">
+                    <div class="session-icon">💬</div>
+                    <div class="session-info">
+                        <span class="session-title">{{ s.title }}</span>
+                        <span class="session-date">{{ s.updated_at|date:"d M Y, H:i" }} &middot; {{ s.messages.count }} message{{ s.messages.count|pluralize }}</span>
+                    </div>
+                </a>
+                <form method="post" action="{% url 'delete_session' s.pk %}" class="session-delete-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon-danger" title="Delete conversation"
+                        onclick="return confirm('Delete this conversation?')">🗑</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="chat-empty">
+        <span class="empty-icon">💬</span>
+        <p>No conversations yet — start one above!</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

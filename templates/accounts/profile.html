@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}My Account — AISITY{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+
+    <div class="page-header">
+        <h1>My Account</h1>
+        <p>Manage your personal information and academic scores</p>
+    </div>
+
+    <div class="profile-grid">
+
+        <!-- LEFT: Personal Information -->
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div class="profile-avatar">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</div>
+                <div>
+                    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+                    <span class="profile-username">@{{ user.username }}</span>
+                    {% if profile.role %}
+                    <span class="profile-role-badge">{{ profile.get_role_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-info-row">
+                <span class="info-label">📍 Study Location</span>
+                <span class="info-value">{{ profile.get_study_location_display|default:"Not set" }}</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="info-label">📅 Member Since</span>
+                <span class="info-value">{{ profile.created_at|date:"M d, Y" }}</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="info-label">🏫 Saved Universities</span>
+                <span class="info-value">{{ user.my_universities.count }}</span>
+            </div>
+
+            <hr class="profile-divider">
+
+            <h3 class="form-section-title">Edit Personal Info</h3>
+            <form method="post" class="profile-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="info">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        {{ info_form.first_name }}
+                        {% if info_form.first_name.errors %}<span class="field-error">{{ info_form.first_name.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        {{ info_form.last_name }}
+                        {% if info_form.last_name.errors %}<span class="field-error">{{ info_form.last_name.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Father's Name</label>
+                    {{ info_form.father_name }}
+                    {% if info_form.father_name.errors %}<span class="field-error">{{ info_form.father_name.errors.0 }}</span>{% endif %}
+                </div>
+                <button type="submit" class="btn-primary">Save Info</button>
+            </form>
+        </div>
+
+        <!-- RIGHT: Academic Scores -->
+        <div class="profile-card">
+            <h2 class="scores-title">📊 Academic Scores</h2>
+            <p class="scores-subtitle">Enter your exam scores. We'll use them to match you with suitable universities.</p>
+
+            <!-- Scores display -->
+            <div class="scores-display">
+                <div class="score-box {% if profile.ielts_score %}score-set{% else %}score-empty{% endif %}">
+                    <span class="score-label">IELTS</span>
+                    <span class="score-value">
+                        {% if profile.ielts_score %}{{ profile.ielts_score }}{% else %}—{% endif %}
+                    </span>
+                    <span class="score-max">/ 9.0</span>
+                </div>
+                <div class="score-box {% if profile.sat_score %}score-set{% else %}score-empty{% endif %}">
+                    <span class="score-label">SAT</span>
+                    <span class="score-value">
+                        {% if profile.sat_score %}{{ profile.sat_score }}{% else %}—{% endif %}
+                    </span>
+                    <span class="score-max">/ 1600</span>
+                </div>
+                <div class="score-box {% if profile.dim_score %}score-set{% else %}score-empty{% endif %}">
+                    <span class="score-label">DİM</span>
+                    <span class="score-value">
+                        {% if profile.dim_score %}{{ profile.dim_score }}{% else %}—{% endif %}
+                    </span>
+                    <span class="score-max">/ 700</span>
+                </div>
+            </div>
+
+            <hr class="profile-divider">
+
+            <h3 class="form-section-title">Update Scores</h3>
+            <form method="post" class="profile-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="scores">
+
+                <div class="form-group">
+                    <label>IELTS Score <span class="label-hint">(0.0 – 9.0)</span></label>
+                    {{ scores_form.ielts_score }}
+                    {% if scores_form.ielts_score.errors %}<span class="field-error">{{ scores_form.ielts_score.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>SAT Score <span class="label-hint">(400 – 1600)</span></label>
+                    {{ scores_form.sat_score }}
+                    {% if scores_form.sat_score.errors %}<span class="field-error">{{ scores_form.sat_score.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>DİM Score <span class="label-hint">(0 – 700)</span></label>
+                    {{ scores_form.dim_score }}
+                    {% if scores_form.dim_score.errors %}<span class="field-error">{{ scores_form.dim_score.errors.0 }}</span>{% endif %}
+                </div>
+                <button type="submit" class="btn-primary">Save Scores</button>
+            </form>
+
+            {% if profile.ielts_score or profile.sat_score %}
+            <hr class="profile-divider">
+            <div class="score-match-hint">
+                <span class="hint-icon">💡</span>
+                <span>Your scores are saved. Use the <strong>"Match My Scores"</strong> filter on the <a href="{% url 'home' %}">Home</a> page to find universities that match your qualifications.</span>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

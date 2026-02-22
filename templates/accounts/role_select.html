@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Who Are You? — AISITY{% endblock %}
+
+{% block auth_content %}
+<div class="onboarding-wrapper">
+    <div class="onboarding-card">
+        <div class="onboarding-progress">
+            <div class="progress-step active">1</div>
+            <div class="progress-line"></div>
+            <div class="progress-step">2</div>
+        </div>
+        <h1>Who are you?</h1>
+        <p class="onboarding-subtitle">Help us personalize your university search</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="role-options">
+                <label class="role-card">
+                    <input type="radio" name="role" value="applicant" {% if form.instance.role == 'applicant' %}checked{% endif %}>
+                    <div class="role-card-inner">
+                        <span class="role-icon">📚</span>
+                        <span class="role-title">Applicant</span>
+                        <span class="role-subtitle">Abituriyent looking for a university</span>
+                    </div>
+                </label>
+                <label class="role-card">
+                    <input type="radio" name="role" value="student" {% if form.instance.role == 'student' %}checked{% endif %}>
+                    <div class="role-card-inner">
+                        <span class="role-icon">🎓</span>
+                        <span class="role-title">Student</span>
+                        <span class="role-subtitle">Bachelor or Master student</span>
+                    </div>
+                </label>
+            </div>
+            <button type="submit" class="btn-primary btn-full">Continue →</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

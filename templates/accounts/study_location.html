@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Where to Study? — AISITY{% endblock %}
+
+{% block auth_content %}
+<div class="onboarding-wrapper">
+    <div class="onboarding-card">
+        <div class="onboarding-progress">
+            <div class="progress-step completed">✓</div>
+            <div class="progress-line active"></div>
+            <div class="progress-step active">2</div>
+        </div>
+        <h1>Where do you want to study?</h1>
+        <p class="onboarding-subtitle">We'll show you universities based on your preference</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="role-options">
+                <label class="role-card">
+                    <input type="radio" name="study_location" value="azerbaijan" {% if form.instance.study_location == 'azerbaijan' %}checked{% endif %}>
+                    <div class="role-card-inner">
+                        <span class="role-icon">🇦🇿</span>
+                        <span class="role-title">Azerbaijan</span>
+                        <span class="role-subtitle">Domestic universities</span>
+                    </div>
+                </label>
+                <label class="role-card">
+                    <input type="radio" name="study_location" value="abroad" {% if form.instance.study_location == 'abroad' %}checked{% endif %}>
+                    <div class="role-card-inner">
+                        <span class="role-icon">✈️</span>
+                        <span class="role-title">Abroad</span>
+                        <span class="role-subtitle">International universities</span>
+                    </div>
+                </label>
+            </div>
+            <button type="submit" class="btn-primary btn-full">Get Started →</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

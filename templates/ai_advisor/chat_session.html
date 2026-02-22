@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block title %}{{ session.title }} — AI Consultant{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="chat-sidebar">
+        <div class="chat-sidebar-top">
+            <a href="{% url 'chat_home' %}" class="back-link" style="font-size:.88rem">← All Chats</a>
+            <form method="post" action="{% url 'chat_home' %}" style="margin-top:10px">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary btn-sm" style="width:100%">+ New Chat</button>
+            </form>
+        </div>
+
+        <div class="chat-sidebar-sessions">
+            {% for s in all_sessions %}
+            <a href="{% url 'chat_session' s.pk %}"
+               class="sidebar-session {% if s.pk == session.pk %}active{% endif %}">
+                <span>💬</span>
+                <span class="sidebar-session-title">{{ s.title|truncatechars:32 }}</span>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if profile %}
+        <div class="chat-sidebar-profile">
+            <div class="sidebar-scores-title">Your Scores</div>
+            <div class="sidebar-scores">
+                <div class="sidebar-score-item">
+                    <span class="sidebar-score-label">IELTS</span>
+                    <span class="sidebar-score-value">{{ profile.ielts_score|default:"—" }}</span>
+                </div>
+                <div class="sidebar-score-item">
+                    <span class="sidebar-score-label">SAT</span>
+                    <span class="sidebar-score-value">{{ profile.sat_score|default:"—" }}</span>
+                </div>
+                <div class="sidebar-score-item">
+                    <span class="sidebar-score-label">DİM</span>
+                    <span class="sidebar-score-value">{{ profile.dim_score|default:"—" }}</span>
+                </div>
+            </div>
+            <a href="{% url 'profile' %}" class="sidebar-profile-link">Update scores →</a>
+        </div>
+        {% endif %}
+    </aside>
+
+    <!-- ── Main chat area ── -->
+    <div class="chat-main">
+
+        <!-- Top bar -->
+        <div class="chat-topbar">
+            <div class="chat-topbar-left">
+                <span class="ai-status-dot"></span>
+                <span class="chat-topbar-title" id="session-title-display">{{ session.title }}</span>
+            </div>
+            <div class="chat-topbar-actions">
+                <form method="post" action="{% url 'clear_session' session.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline btn-sm"
+                        onclick="return confirm('Clear all messages in this chat?')">🧹 Clear</button>
+                </form>
+                <form method="post" action="{% url 'delete_session' session.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-remove btn-sm"
+                        onclick="return confirm('Delete this conversation?')">🗑 Delete</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Messages area -->
+        <div class="chat-messages" id="chat-messages">
+
+            {% if not chat_messages %}
+            <div class="chat-welcome">
+                <div class="chat-welcome-icon">🤖</div>
+                <h3>Hello, {{ request.user.first_name|default:request.user.username }}!</h3>
+                <p>I'm AI Consultant. Ask me anything about universities, programs, scholarships, or admissions.</p>
+                <div class="welcome-chips">
+                    <span class="chip clickable-chip">Which university has the lowest tuition?</span>
+                    <span class="chip clickable-chip">Compare BHOS and ADA University</span>
+                    <span class="chip clickable-chip">Which universities don't require IELTS?</span>
+                    <span class="chip clickable-chip">What scholarships are available?</span>
+                    <span class="chip clickable-chip">I have IELTS 6.5 — where can I apply?</span>
+                    <span class="chip clickable-chip">Best universities for Engineering</span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% for msg in chat_messages %}
+            <div class="chat-message {% if msg.role == 'user' %}msg-user{% else %}msg-assistant{% endif %}">
+                <div class="msg-avatar">
+                    {% if msg.role == 'user' %}
+                        {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
+                    {% else %}
+                        🤖
+                    {% endif %}
+                </div>
+                <div class="msg-bubble">
+                    <div class="msg-content">{{ msg.content }}</div>
+                    <span class="msg-time">{{ msg.created_at|date:"H:i" }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Typing indicator (hidden by default) -->
+            <div class="chat-message msg-assistant" id="typing-indicator" style="display:none">
+                <div class="msg-avatar">🤖</div>
+                <div class="msg-bubble">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /chat-messages -->
+
+        <!-- Input bar -->
+        <div class="chat-input-bar">
+            <div class="chat-input-wrapper">
+                <textarea
+                    id="chat-input"
+                    class="chat-textarea"
+                    placeholder="Ask about universities, majors, scholarships…"
+                    rows="1"
+                    maxlength="2000"
+                ></textarea>
+                <button id="send-btn" class="chat-send-btn" title="Send (Enter)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+            <p class="chat-hint">Press <kbd>Enter</kbd> to send &middot; <kbd>Shift+Enter</kbd> for new line</p>
+        </div>
+
+    </div><!-- /chat-main -->
+</div><!-- /chat-layout -->
+
+<script>
+const SESSION_ID   = {{ session.pk }};
+const SEND_URL     = "{% url 'send_message' session.pk %}";
+const CSRF_TOKEN   = "{{ csrf_token }}";
+
+const messagesEl   = document.getElementById('chat-messages');
+const inputEl      = document.getElementById('chat-input');
+const sendBtn      = document.getElementById('send-btn');
+const typingEl     = document.getElementById('typing-indicator');
+const titleDisplay = document.getElementById('session-title-display');
+
+// ── Auto-scroll to bottom ──
+function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+scrollToBottom();
+
+// ── Auto-resize textarea ──
+inputEl.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+});
+
+// ── Clickable welcome chips ──
+document.querySelectorAll('.clickable-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+        inputEl.value = chip.textContent.trim();
+        inputEl.focus();
+    });
+});
+
+// ── Send on Enter (not Shift+Enter) ──
+inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+sendBtn.addEventListener('click', sendMessage);
+
+// ── Append a bubble ──
+function appendMessage(role, content) {
+    // Remove welcome screen if still showing
+    const welcome = document.querySelector('.chat-welcome');
+    if (welcome) welcome.remove();
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message ' + (role === 'user' ? 'msg-user' : 'msg-assistant');
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = role === 'user' ? '{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}' : '🤖';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+
+    const contentEl = document.createElement('div');
+    contentEl.className = 'msg-content';
+    contentEl.textContent = content;   // safe — no innerHTML
+
+    const time = document.createElement('span');
+    time.className = 'msg-time';
+    const now = new Date();
+    time.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    bubble.appendChild(contentEl);
+    bubble.appendChild(time);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(bubble);
+
+    // Insert before typing indicator
+    messagesEl.insertBefore(wrapper, typingEl);
+    scrollToBottom();
+}
+
+// ── Main send function ──
+function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    appendMessage('user', text);
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    // Show typing indicator
+    typingEl.style.display = 'flex';
+    scrollToBottom();
+
+    fetch(SEND_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRF_TOKEN,
+        },
+        body: JSON.stringify({ message: text }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        typingEl.style.display = 'none';
+        if (data.error) {
+            appendMessage('assistant', '⚠️ ' + data.error);
+        } else {
+            appendMessage('assistant', data.response);
+            if (data.session_title && titleDisplay) {
+                titleDisplay.textContent = data.session_title;
+                document.title = data.session_title + ' — AI Consultant';
+            }
+        }
+    })
+    .catch(function () {
+        typingEl.style.display = 'none';
+        appendMessage('assistant', '⚠️ Network error — please try again.');
+    })
+    .finally(function () {
+        sendBtn.disabled = false;
+        inputEl.focus();
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% block title %}Rank Yourself — AISITY{% endblock %}
+
+{% block content %}
+<div class="rank-wrapper">
+
+    <!-- Header -->
+    <div class="rank-hero">
+        <div class="rank-hero-left">
+            <h1>📊 Rank Yourself</h1>
+            <p>Search and drag faculties into your personal priority list — from your top choice down. Your ranking is saved automatically.</p>
+        </div>
+        {% if saved_entries %}
+        <div class="rank-hero-right">
+            <span class="rank-saved-badge">✅ {{ saved_entries|length }} ixtisas sıralanıb</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="rank-layout">
+
+        <!-- ── LEFT: Available faculties pool ── -->
+        <div class="rank-pool-panel">
+            <div class="rank-panel-header">
+                <h2>İxtisaslar</h2>
+                <span class="rank-pool-count" id="pool-count">{{ available_faculties|length }}</span>
+            </div>
+
+            <!-- Filters -->
+            <form method="get" class="rank-filter-form" id="filter-form">
+                <input type="text" name="q" value="{{ search_q }}" class="rank-filter-input"
+                       placeholder="İxtisas və ya universitet axtar…" id="search-input">
+                <div class="rank-filter-row">
+                    <select name="uni" class="rank-filter-select" onchange="this.form.submit()">
+                        <option value="">Bütün universitetlər</option>
+                        {% for u in all_universities %}
+                        <option value="{{ u.pk }}" {% if filter_uni == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="pay" class="rank-filter-select" onchange="this.form.submit()">
+                        <option value="">Bütün növlər</option>
+                        <option value="state" {% if filter_pay == 'state' %}selected{% endif %}>Dövlət sifarişi</option>
+                        <option value="paid"  {% if filter_pay == 'paid'  %}selected{% endif %}>Ödənişli</option>
+                    </select>
+                    {% if search_q or filter_uni or filter_pay %}
+                    <a href="{% url 'rank_yourself' %}" class="btn-outline btn-sm">✕ Sıfırla</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Faculty cards pool — draggable SOURCE -->
+            <div class="rank-pool" id="faculty-pool">
+                {% for f in available_faculties %}
+                <div class="rank-card {% if f.pk in saved_faculty_ids %}rank-card-added{% endif %}"
+                     data-id="{{ f.pk }}"
+                     draggable="true">
+                    <div class="rank-card-drag-handle">⠿</div>
+                    <div class="rank-card-body">
+                        <div class="rank-card-faculty">{{ f.name }}</div>
+                        <div class="rank-card-uni">{{ f.university.name }}</div>
+                        <div class="rank-card-tags">
+                            {% if f.state_order_places %}
+                            <span class="rank-tag rank-tag-state">🏛 Dövlət sifarişi — {{ f.state_order_places }} yer</span>
+                            {% endif %}
+                            {% if f.tuition_paid %}
+                            <span class="rank-tag rank-tag-paid">💰 Ödənişli — {{ f.tuition_paid }} AZN</span>
+                            {% endif %}
+                            {% if not f.state_order_places and not f.tuition_paid %}
+                            <span class="rank-tag rank-tag-unknown">❓ Məlumat yoxdur</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="rank-card-add-btn" title="Siyahıya əlavə et"
+                            onclick="addToRanking({{ f.pk }}, this)">+</button>
+                </div>
+                {% empty %}
+                <div class="rank-empty-pool">
+                    <span>🔍</span>
+                    <p>Heç bir ixtisas tapılmadı. Filteri dəyişin.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ── RIGHT: User's ranking list ── -->
+        <div class="rank-list-panel">
+            <div class="rank-panel-header">
+                <h2>Mənim Sıralamam</h2>
+                <div class="rank-list-actions">
+                    <span class="rank-list-count" id="rank-count">{{ saved_entries|length }}</span>
+                    <button class="btn-primary btn-sm" id="save-btn" onclick="saveRanking()">💾 Yadda saxla</button>
+                    <button class="btn-outline btn-sm" id="clear-btn" onclick="clearRanking()">🗑 Təmizlə</button>
+                </div>
+            </div>
+
+            <div id="save-status" class="rank-save-status" style="display:none"></div>
+
+            <!-- The sortable ranked list -->
+            <div class="rank-list" id="rank-list">
+                {% for entry in saved_entries %}
+                <div class="rank-item" data-id="{{ entry.faculty.pk }}">
+                    <div class="rank-item-num">{{ forloop.counter }}</div>
+                    <div class="rank-item-drag">⠿</div>
+                    <div class="rank-item-body">
+                        <div class="rank-item-faculty">{{ entry.faculty.name }}</div>
+                        <div class="rank-item-uni">{{ entry.faculty.university.name }}</div>
+                        <div class="rank-item-tags">
+                            {% if entry.faculty.state_order_places %}
+                            <span class="rank-tag rank-tag-state">🏛 Dövlət — {{ entry.faculty.state_order_places }} yer</span>
+                            {% endif %}
+                            {% if entry.faculty.tuition_paid %}
+                            <span class="rank-tag rank-tag-paid">💰 {{ entry.faculty.tuition_paid }} AZN</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="rank-item-remove" title="Siyahıdan çıxar"
+                            onclick="removeFromRanking(this)">✕</button>
+                </div>
+                {% empty %}
+                <div class="rank-list-empty" id="rank-empty-msg">
+                    <span>📋</span>
+                    <p>Sola baxın — ixtisasları sürükləyin və ya <strong>+</strong> düyməsinə basın.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Ranking tips -->
+            <div class="rank-tips">
+                <p>💡 <strong>İpucu:</strong> Sıranı dəyişmək üçün sürükləyin. Dəyişiklikləri yadda saxlamaq üçün <strong>Yadda saxla</strong> düyməsinə basın.</p>
+            </div>
+        </div>
+
+    </div><!-- /rank-layout -->
+</div>
+
+<script>
+// ── State ──
+const SAVE_URL  = "{% url 'save_ranking' %}";
+const CSRF      = "{{ csrf_token }}";
+
+// Build initial ranked list from server data
+let rankedIds = [{% for e in saved_entries %}{{ e.faculty.pk }},{% endfor %}];
+
+// ── Pool drag-and-drop to rank list ──
+const pool     = document.getElementById('faculty-pool');
+const rankList = document.getElementById('rank-list');
+
+// Drag start on pool cards
+pool.addEventListener('dragstart', function (e) {
+    const card = e.target.closest('.rank-card');
+    if (!card) return;
+    e.dataTransfer.setData('text/plain', card.dataset.id);
+    e.dataTransfer.effectAllowed = 'copy';
+    card.classList.add('dragging');
+});
+pool.addEventListener('dragend', function (e) {
+    const card = e.target.closest('.rank-card');
+    if (card) card.classList.remove('dragging');
+});
+
+// Rank list as drop target
+rankList.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    const afterEl = getDragAfterElement(rankList, e.clientY);
+    const placeholder = document.querySelector('.rank-drag-placeholder');
+    if (placeholder) placeholder.remove();
+    const ph = document.createElement('div');
+    ph.className = 'rank-drag-placeholder';
+    if (afterEl) rankList.insertBefore(ph, afterEl);
+    else rankList.appendChild(ph);
+});
+rankList.addEventListener('dragleave', function (e) {
+    if (!rankList.contains(e.relatedTarget)) {
+        const placeholder = document.querySelector('.rank-drag-placeholder');
+        if (placeholder) placeholder.remove();
+    }
+});
+rankList.addEventListener('drop', function (e) {
+    e.preventDefault();
+    const placeholder = document.querySelector('.rank-drag-placeholder');
+    const id = parseInt(e.dataTransfer.getData('text/plain'));
+    if (!id) { if (placeholder) placeholder.remove(); return; }
+
+    // Add if not already in list
+    if (!rankedIds.includes(id)) {
+        const card = pool.querySelector(`.rank-card[data-id="${id}"]`);
+        if (!card) { if (placeholder) placeholder.remove(); return; }
+        const item = buildRankItem(id, card);
+        if (placeholder) { rankList.insertBefore(item, placeholder); placeholder.remove(); }
+        else rankList.appendChild(item);
+        rankedIds.push(id);
+        card.classList.add('rank-card-added');
+        removeEmptyMsg();
+        refreshNumbers();
+        updateCount();
+    } else {
+        if (placeholder) placeholder.remove();
+    }
+});
+
+// ── Sortable within rank list ──
+let dragSrc = null;
+rankList.addEventListener('dragstart', function (e) {
+    const item = e.target.closest('.rank-item');
+    if (!item) return;
+    dragSrc = item;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item.dataset.id);
+    item.classList.add('dragging-item');
+});
+rankList.addEventListener('dragend', function () {
+    if (dragSrc) { dragSrc.classList.remove('dragging-item'); dragSrc = null; }
+    document.querySelectorAll('.rank-drag-placeholder').forEach(el => el.remove());
+    refreshRankedIds();
+    refreshNumbers();
+});
+
+// ── Helpers ──
+function getDragAfterElement(container, y) {
+    const els = [...container.querySelectorAll('.rank-item:not(.dragging-item)')];
+    return els.reduce(function (closest, el) {
+        const box = el.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset, element: el };
+        return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function buildRankItem(id, sourceCard) {
+    const facultyName = sourceCard.querySelector('.rank-card-faculty').textContent;
+    const uniName     = sourceCard.querySelector('.rank-card-uni').textContent;
+    const tagsHtml    = sourceCard.querySelector('.rank-card-tags').innerHTML;
+
+    const item = document.createElement('div');
+    item.className = 'rank-item';
+    item.dataset.id = id;
+    item.draggable = true;
+    item.innerHTML = `
+        <div class="rank-item-num">?</div>
+        <div class="rank-item-drag">⠿</div>
+        <div class="rank-item-body">
+            <div class="rank-item-faculty">${facultyName}</div>
+            <div class="rank-item-uni">${uniName}</div>
+            <div class="rank-item-tags">${tagsHtml}</div>
+        </div>
+        <button class="rank-item-remove" title="Siyahıdan çıxar" onclick="removeFromRanking(this)">✕</button>
+    `;
+    return item;
+}
+
+function removeEmptyMsg() {
+    const msg = document.getElementById('rank-empty-msg');
+    if (msg) msg.remove();
+}
+
+function refreshNumbers() {
+    rankList.querySelectorAll('.rank-item').forEach(function (item, i) {
+        const num = item.querySelector('.rank-item-num');
+        if (num) num.textContent = i + 1;
+    });
+}
+
+function refreshRankedIds() {
+    rankedIds = [...rankList.querySelectorAll('.rank-item')].map(el => parseInt(el.dataset.id));
+}
+
+function updateCount() {
+    const c = rankList.querySelectorAll('.rank-item').length;
+    document.getElementById('rank-count').textContent = c;
+}
+
+// ── Add via + button ──
+function addToRanking(id, btn) {
+    if (rankedIds.includes(id)) return;
+    const card = pool.querySelector(`.rank-card[data-id="${id}"]`);
+    if (!card) return;
+    const item = buildRankItem(id, card);
+    removeEmptyMsg();
+    rankList.appendChild(item);
+    rankedIds.push(id);
+    card.classList.add('rank-card-added');
+    refreshNumbers();
+    updateCount();
+}
+
+// ── Remove from list ──
+function removeFromRanking(btn) {
+    const item = btn.closest('.rank-item');
+    const id = parseInt(item.dataset.id);
+    item.remove();
+    rankedIds = rankedIds.filter(x => x !== id);
+    // Un-mark pool card
+    const poolCard = pool.querySelector(`.rank-card[data-id="${id}"]`);
+    if (poolCard) poolCard.classList.remove('rank-card-added');
+    refreshNumbers();
+    updateCount();
+    if (rankList.querySelectorAll('.rank-item').length === 0) {
+        const msg = document.createElement('div');
+        msg.id = 'rank-empty-msg';
+        msg.className = 'rank-list-empty';
+        msg.innerHTML = '<span>📋</span><p>Sola baxın — ixtisasları sürükləyin və ya <strong>+</strong> düyməsinə basın.</p>';
+        rankList.appendChild(msg);
+    }
+}
+
+// ── Clear all ──
+function clearRanking() {
+    if (!confirm('Bütün sıralamağı silmək istəyirsiniz?')) return;
+    rankList.querySelectorAll('.rank-item').forEach(function(item){
+        const id = parseInt(item.dataset.id);
+        const pc = pool.querySelector(`.rank-card[data-id="${id}"]`);
+        if (pc) pc.classList.remove('rank-card-added');
+        item.remove();
+    });
+    rankedIds = [];
+    updateCount();
+    const msg = document.createElement('div');
+    msg.id = 'rank-empty-msg';
+    msg.className = 'rank-list-empty';
+    msg.innerHTML = '<span>📋</span><p>Sola baxın — ixtisasları sürükləyin və ya <strong>+</strong> düyməsinə basın.</p>';
+    rankList.appendChild(msg);
+}
+
+// ── Save ──
+function saveRanking() {
+    refreshRankedIds();
+    const btn = document.getElementById('save-btn');
+    const status = document.getElementById('save-status');
+    btn.disabled = true;
+    btn.textContent = '⏳ Saxlanılır…';
+
+    fetch(SAVE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ faculty_ids: rankedIds }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            status.className = 'rank-save-status rank-save-ok';
+            status.textContent = '✅ ' + data.saved + ' ixtisas uğurla saxlanıldı!';
+        } else {
+            status.className = 'rank-save-status rank-save-err';
+            status.textContent = '⚠️ Xəta: ' + (data.error || 'Naməlum xəta');
+        }
+        status.style.display = 'block';
+        setTimeout(() => { status.style.display = 'none'; }, 3500);
+    })
+    .catch(() => {
+        status.className = 'rank-save-status rank-save-err';
+        status.textContent = '⚠️ Şəbəkə xətası. Yenidən cəhd edin.';
+        status.style.display = 'block';
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = '💾 Yadda saxla';
+    });
+}
+
+// ── Live search filter (client-side) ──
+document.getElementById('search-input').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    pool.querySelectorAll('.rank-card').forEach(function (card) {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(q) ? '' : 'none';
+    });
+    const visible = pool.querySelectorAll('.rank-card:not([style*="none"])').length;
+    document.getElementById('pool-count').textContent = visible;
+});
+
+// Initial refresh
+refreshNumbers();
+</script>
+{% endblock %}

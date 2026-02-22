@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}My Universities — AISITY{% endblock %}
+
+{% block content %}
+<div class="my-uni-wrapper">
+    <div class="page-header">
+        <h1>My Universities</h1>
+        <p>Your saved universities for easy comparison</p>
+    </div>
+
+    {% if saved %}
+    <div class="university-grid">
+        {% for item in saved %}
+        {% with uni=item.university %}
+        <div class="uni-card">
+            <div class="uni-card-logo">
+                {% if uni.logo %}
+                <img src="{{ uni.logo.url }}" alt="{{ uni.name }} logo">
+                {% else %}
+                <div class="uni-logo-placeholder">{{ uni.name|slice:":2"|upper }}</div>
+                {% endif %}
+            </div>
+            <div class="uni-card-body">
+                <h3 class="uni-card-name">{{ uni.name }}</h3>
+                <p class="uni-card-location">📍 {{ uni.city }}, {{ uni.country }}</p>
+                <div class="uni-card-meta">
+                    <span class="meta-badge meta-fee">💰 ${{ uni.tuition_fee }}/yr</span>
+                    <span class="meta-badge meta-duration">⏱ {{ uni.duration }}</span>
+                    <span class="meta-badge meta-degree">🎓 {{ uni.get_degree_level_display }}</span>
+                </div>
+                <p class="added-date">Added: {{ item.added_at|date:"M d, Y" }}</p>
+            </div>
+            <div class="uni-card-footer">
+                <a href="{% url 'university_detail' uni.pk %}" class="btn-outline">View Details</a>
+                <a href="{% url 'remove_university' uni.pk %}?next=my_universities" class="btn-remove">Remove</a>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">🏫</span>
+        <h2>No saved universities yet</h2>
+        <p>Start exploring and add universities to your list for easy comparison.</p>
+        <a href="{% url 'home' %}" class="btn-primary">Explore Universities</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

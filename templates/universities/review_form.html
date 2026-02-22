@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Review — {{ university.name }}{% endblock %}
+
+{% block content %}
+<div class="detail-wrapper">
+    <a href="{% url 'university_detail' university.pk %}#reviews" class="back-link">← Back to {{ university.name }}</a>
+
+    <div class="review-form-wrapper">
+        <div class="review-form-card">
+            <div class="review-form-header">
+                <span class="review-form-icon">📝</span>
+                <h1>{{ action }} Your Review</h1>
+                <p>Sharing your honest experience helps other students make better decisions.</p>
+            </div>
+
+            {% if messages %}
+            <div class="messages-inline">
+                {% for msg in messages %}
+                <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="review-form-body" novalidate>
+                {% csrf_token %}
+
+                <!-- Rating -->
+                <div class="rform-group">
+                    <label class="rform-label required-label">{{ form.rating.label }}</label>
+                    <div class="star-rating-input">
+                        {% for choice in form.rating %}
+                        <label class="star-choice" data-value="{{ choice.data.value }}">
+                            {{ choice.tag }}
+                            <span class="star-icon">★</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.rating.errors %}<p class="field-error">{{ form.rating.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- Recommend -->
+                <div class="rform-group">
+                    <label class="rform-label required-label">{{ form.recommend.label }}</label>
+                    <div class="recommend-input">
+                        {% for choice in form.recommend %}
+                        <label class="recommend-choice recommend-{{ choice.data.value }}">
+                            {{ choice.tag }}
+                            <span>{% if choice.data.value == 'yes' %}👍 Yes, I recommend it{% else %}👎 No, I don't{% endif %}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.recommend.errors %}<p class="field-error">{{ form.recommend.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- Title -->
+                <div class="rform-group">
+                    <label class="rform-label required-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<p class="field-error">{{ form.title.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- Experience -->
+                <div class="rform-group">
+                    <label class="rform-label required-label" for="{{ form.experience.id_for_label }}">{{ form.experience.label }}</label>
+                    {{ form.experience }}
+                    {% if form.experience.errors %}<p class="field-error">{{ form.experience.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- Pros & Cons side by side -->
+                <div class="rform-row">
+                    <div class="rform-group">
+                        <label class="rform-label required-label pros-color" for="{{ form.pros.id_for_label }}">✅ {{ form.pros.label }}</label>
+                        {{ form.pros }}
+                        {% if form.pros.errors %}<p class="field-error">{{ form.pros.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div class="rform-group">
+                        <label class="rform-label required-label cons-color" for="{{ form.cons.id_for_label }}">❌ {{ form.cons.label }}</label>
+                        {{ form.cons }}
+                        {% if form.cons.errors %}<p class="field-error">{{ form.cons.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="rform-group">
+                    <label class="rform-label" for="{{ form.tips.id_for_label }}">💡 {{ form.tips.label }}</label>
+                    {{ form.tips }}
+                    {% if form.tips.errors %}<p class="field-error">{{ form.tips.errors.0 }}</p>{% endif %}
+                </div>
+
+                <div class="rform-actions">
+                    <button type="submit" class="btn-primary btn-full">{{ action }} Review</button>
+                    <a href="{% url 'university_detail' university.pk %}#reviews" class="btn-secondary btn-full">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Interactive star highlight on hover / click
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('.star-choice');
+    function updateStars(upTo) {
+        stars.forEach(function (s) {
+            const v = parseInt(s.dataset.value);
+            s.querySelector('.star-icon').classList.toggle('star-filled', v <= upTo);
+        });
+    }
+    // Set initial state (editing)
+    const checked = document.querySelector('.star-radio:checked');
+    if (checked) updateStars(parseInt(checked.value));
+
+    stars.forEach(function (label) {
+        label.addEventListener('mouseenter', function () { updateStars(parseInt(label.dataset.value)); });
+        label.addEventListener('mouseleave', function () {
+            const c = document.querySelector('.star-radio:checked');
+            updateStars(c ? parseInt(c.value) : 0);
+        });
+        label.addEventListener('click', function () { updateStars(parseInt(label.dataset.value)); });
+    });
+});
+</script>
+{% endblock %}

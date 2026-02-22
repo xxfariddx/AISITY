@@ -1,0 +1,377 @@
+[
+  {
+    "model": "universities.university",
+    "pk": 1,
+    "fields": {
+      "name": "Baku Higher Oil School",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "tuition_fee": "4500.00",
+      "duration": "5 years (1 year foundation)",
+      "degree_level": "both",
+      "description": "Baku Higher Oil School (BHOS) is a leading technical university in Azerbaijan, established in 2011 by BP and the State Oil Company of Azerbaijan (SOCAR). It offers world-class engineering and business programs in collaboration with Heriot-Watt University.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 2,
+    "fields": {
+      "name": "Azerbaijan State University of Economics (UNEC)",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "tuition_fee": "1500.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "UNEC is one of the oldest and most prestigious economic universities in Azerbaijan, offering programs in Economics, Business, Finance, and International Relations.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 3,
+    "fields": {
+      "name": "Baku State University",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "tuition_fee": "1200.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "Baku State University is the oldest and largest classical university in Azerbaijan, founded in 1919. It offers diverse programs in Natural Sciences, Humanities, Law, and more.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 4,
+    "fields": {
+      "name": "Azerbaijan Technical University",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "tuition_fee": "1300.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "AzTU is a leading technical university in Azerbaijan offering engineering programs in Mechanical, Electrical, Computer, and Civil Engineering.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 5,
+    "fields": {
+      "name": "ADA University",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "tuition_fee": "8000.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "ADA University is a prestigious private university in Baku offering programs in IT & Engineering, Business, Public Administration, Education, and Law with international standards.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 6,
+    "fields": {
+      "name": "Qafqaz University",
+      "country": "Azerbaijan",
+      "city": "Baku",
+      "tuition_fee": "2500.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "Qafqaz University is a private university in Baku with a strong focus on Engineering, Business, and Law. It maintains close ties with Turkish universities.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 7,
+    "fields": {
+      "name": "Istanbul Technical University",
+      "country": "Turkey",
+      "city": "Istanbul",
+      "tuition_fee": "2000.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "Istanbul Technical University (ITU) is one of the world's oldest technical universities, globally recognized for its engineering, architecture, and science programs.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 8,
+    "fields": {
+      "name": "Moscow State University",
+      "country": "Russia",
+      "city": "Moscow",
+      "tuition_fee": "4500.00",
+      "duration": "4 years",
+      "degree_level": "both",
+      "description": "Moscow State University (MSU) is Russia's largest and most prestigious university, offering world-class programs in Science, Humanities, Law, Economics, and Technology.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.university",
+    "pk": 9,
+    "fields": {
+      "name": "University of Warsaw",
+      "country": "Poland",
+      "city": "Warsaw",
+      "tuition_fee": "2200.00",
+      "duration": "3 years",
+      "degree_level": "both",
+      "description": "University of Warsaw is the largest and most research-intensive university in Poland, offering a wide range of programs in Social Sciences, Humanities, Natural Sciences, and Technology.",
+      "logo": "",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 1,
+    "fields": {
+      "university": 1,
+      "name": "Petroleum Engineering",
+      "degree_level": "bachelor",
+      "description": "Covers oil and gas extraction, reservoir engineering, and petroleum production technologies."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 2,
+    "fields": {
+      "university": 1,
+      "name": "Chemical Engineering",
+      "degree_level": "bachelor",
+      "description": "Focuses on chemical processes, refining, and material science in the oil and gas context."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 3,
+    "fields": {
+      "university": 1,
+      "name": "Process Automation Engineering",
+      "degree_level": "bachelor",
+      "description": "Combines automation, control systems, and instrumentation for industrial processes."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 4,
+    "fields": {
+      "university": 1,
+      "name": "Computer Engineering",
+      "degree_level": "bachelor",
+      "description": "Covers software development, networks, embedded systems, and computing technology."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 5,
+    "fields": {
+      "university": 1,
+      "name": "Business Administration",
+      "degree_level": "bachelor",
+      "description": "Provides knowledge in management, marketing, finance, and entrepreneurship."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 6,
+    "fields": {
+      "university": 1,
+      "name": "Data Analytics",
+      "degree_level": "bachelor",
+      "description": "Focuses on big data, machine learning, statistical analysis, and data-driven decision making."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 7,
+    "fields": {
+      "university": 1,
+      "name": "CyberSecurity",
+      "degree_level": "bachelor",
+      "description": "Covers network security, ethical hacking, cryptography, and digital forensics."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 8,
+    "fields": {
+      "university": 2,
+      "name": "Economics",
+      "degree_level": "both",
+      "description": "Macro and micro economics, economic modeling, and policy analysis."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 9,
+    "fields": {
+      "university": 2,
+      "name": "Finance and Credit",
+      "degree_level": "both",
+      "description": "Banking, financial markets, investment analysis, and credit systems."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 10,
+    "fields": {
+      "university": 2,
+      "name": "Business Administration",
+      "degree_level": "both",
+      "description": "Management principles, entrepreneurship, and corporate governance."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 11,
+    "fields": {
+      "university": 3,
+      "name": "Mathematics",
+      "degree_level": "both",
+      "description": "Pure and applied mathematics, statistics, and mathematical modeling."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 12,
+    "fields": {
+      "university": 3,
+      "name": "Law",
+      "degree_level": "both",
+      "description": "Civil law, criminal law, international law, and constitutional studies."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 13,
+    "fields": {
+      "university": 3,
+      "name": "International Relations",
+      "degree_level": "both",
+      "description": "Diplomacy, global politics, international organizations, and foreign policy."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 14,
+    "fields": {
+      "university": 4,
+      "name": "Mechanical Engineering",
+      "degree_level": "both",
+      "description": "Design, manufacturing, thermodynamics, and mechanical systems."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 15,
+    "fields": {
+      "university": 4,
+      "name": "Electrical Engineering",
+      "degree_level": "both",
+      "description": "Power systems, electronics, signal processing, and telecommunications."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 16,
+    "fields": {
+      "university": 5,
+      "name": "Information Technology",
+      "degree_level": "both",
+      "description": "Software engineering, AI, data science, and IT management."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 17,
+    "fields": {
+      "university": 5,
+      "name": "Public Administration",
+      "degree_level": "both",
+      "description": "Governance, public policy, diplomacy, and administrative management."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 18,
+    "fields": {
+      "university": 6,
+      "name": "Engineering",
+      "degree_level": "bachelor",
+      "description": "Industrial and computer engineering programs."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 19,
+    "fields": {
+      "university": 7,
+      "name": "Civil Engineering",
+      "degree_level": "both",
+      "description": "Structural, geotechnical, and transportation engineering."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 20,
+    "fields": {
+      "university": 7,
+      "name": "Computer Engineering",
+      "degree_level": "both",
+      "description": "Software systems, AI, and hardware design."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 21,
+    "fields": {
+      "university": 8,
+      "name": "Physics",
+      "degree_level": "both",
+      "description": "Theoretical and experimental physics, quantum mechanics."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 22,
+    "fields": {
+      "university": 8,
+      "name": "Mathematics & Mechanics",
+      "degree_level": "both",
+      "description": "Applied mathematics, mathematical analysis, and mechanics."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 23,
+    "fields": {
+      "university": 9,
+      "name": "Computer Science",
+      "degree_level": "both",
+      "description": "Algorithms, software engineering, and artificial intelligence."
+    }
+  },
+  {
+    "model": "universities.faculty",
+    "pk": 24,
+    "fields": {
+      "university": 9,
+      "name": "Economics",
+      "degree_level": "both",
+      "description": "Economic theory, quantitative methods, and policy studies."
+    }
+  }
+]

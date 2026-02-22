@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Home — AISITY{% endblock %}
+
+{% block content %}
+<div class="home-wrapper">
+    <!-- Hero -->
+    <div class="home-hero">
+        <h1>Find Your <span class="highlight">Perfect University</span></h1>
+        <p>Compare universities, explore faculties, and make informed decisions about your future.</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <input type="text" name="search" value="{{ search }}" placeholder="🔍 Search universities..." class="filter-input filter-search">
+                </div>
+                <div class="filter-group">
+                    <select name="degree_level" class="filter-select">
+                        <option value="">All Degrees</option>
+                        <option value="bachelor" {% if degree_level == 'bachelor' %}selected{% endif %}>Bachelor</option>
+                        <option value="master" {% if degree_level == 'master' %}selected{% endif %}>Master</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select name="country" class="filter-select">
+                        <option value="">All Countries</option>
+                        {% for c in all_countries %}
+                        <option value="{{ c }}" {% if country == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group filter-fee">
+                    <input type="number" name="min_fee" value="{{ min_fee }}" placeholder="Min Fee ($)" class="filter-input filter-small">
+                    <span class="fee-dash">—</span>
+                    <input type="number" name="max_fee" value="{{ max_fee }}" placeholder="Max Fee ($)" class="filter-input filter-small">
+                </div>
+            </div>
+            <div class="filter-row filter-row-advanced">
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="has_scholarship" value="1" {% if has_scholarship == '1' %}checked{% endif %}>
+                    <span>🏅 Has Scholarships</span>
+                </label>
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="has_dormitory" value="1" {% if has_dormitory == '1' %}checked{% endif %}>
+                    <span>🏠 Dormitory Available</span>
+                </label>
+                {% if profile.ielts_score or profile.sat_score %}
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="match_my_scores" value="1" {% if match_my_scores == '1' %}checked{% endif %}>
+                    <span>🎯 Match My Scores</span>
+                </label>
+                {% endif %}
+                <div class="filter-group">
+                    <select name="sort_by" class="filter-select filter-select-sm">
+                        <option value="">Sort By</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name A–Z</option>
+                        <option value="fee_asc" {% if sort_by == 'fee_asc' %}selected{% endif %}>Fee: Low → High</option>
+                        <option value="fee_desc" {% if sort_by == 'fee_desc' %}selected{% endif %}>Fee: High → Low</option>
+                        <option value="qs_ranking" {% if sort_by == 'qs_ranking' %}selected{% endif %}>QS Ranking</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">Apply</button>
+                    {% if search or degree_level or country or min_fee or max_fee or has_scholarship or has_dormitory or match_my_scores or sort_by %}
+                    <a href="{% url 'home' %}" class="btn-secondary">Clear</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Location badge -->
+    <div class="location-badge">
+        {% if profile.study_location == 'azerbaijan' %}
+        🇦🇿 Showing universities in <strong>Azerbaijan</strong>
+        {% else %}
+        ✈️ Showing <strong>International</strong> universities
+        {% endif %}
+        &nbsp;·&nbsp; {{ universities|length }} result{{ universities|length|pluralize }}
+    </div>
+
+    <!-- University Grid -->
+    {% if universities %}
+    <div class="university-grid">
+        {% for uni in universities %}
+        <div class="uni-card">
+            <div class="uni-card-logo">
+                {% if uni.logo %}
+                <img src="{{ uni.logo.url }}" alt="{{ uni.name }} logo">
+                {% else %}
+                <div class="uni-logo-placeholder">{{ uni.name|slice:":2"|upper }}</div>
+                {% endif %}
+            </div>
+            <div class="uni-card-body">
+                <h3 class="uni-card-name">{{ uni.name }}</h3>
+                <p class="uni-card-location">📍 {{ uni.city }}, {{ uni.country }}</p>
+                <div class="uni-card-meta">
+                    <span class="meta-badge meta-fee">💰 ${{ uni.tuition_fee }}/yr</span>
+                    <span class="meta-badge meta-duration">⏱ {{ uni.duration }}</span>
+                    <span class="meta-badge meta-degree">🎓 {{ uni.get_degree_level_display }}</span>
+                    {% if uni.qs_ranking %}<span class="meta-badge meta-qs">🏆 QS #{{ uni.qs_ranking }}</span>{% endif %}
+                    {% if uni.dormitory_available %}<span class="meta-badge meta-dorm-yes">🏠 Dorm</span>{% endif %}
+                </div>
+            </div>
+            <div class="uni-card-footer">
+                <a href="{% url 'university_detail' uni.pk %}" class="btn-outline">View Details</a>
+                {% if uni.pk in saved_ids %}
+                <a href="{% url 'remove_university' uni.pk %}?next=home" class="btn-saved">✓ Saved</a>
+                {% else %}
+                <a href="{% url 'add_university' uni.pk %}?next=home" class="btn-add">+ Add</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">🔍</span>
+        <h2>No universities found</h2>
+        <p>Try adjusting your filters or search terms.</p>
+        <a href="{% url 'home' %}" class="btn-primary">Clear Filters</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
