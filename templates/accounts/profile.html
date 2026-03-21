@@ -29,7 +29,11 @@
                 <span class="info-value">{{ profile.get_study_location_display|default:"Not set" }}</span>
             </div>
             <div class="profile-info-row">
-                <span class="info-label">📅 Member Since</span>
+                <span class="info-label">� Subject Group</span>
+                <span class="info-value">{{ profile.get_subject_group_display|default:"Not set" }}</span>
+            </div>
+            <div class="profile-info-row">
+                <span class="info-label">�📅 Member Since</span>
                 <span class="info-value">{{ profile.created_at|date:"M d, Y" }}</span>
             </div>
             <div class="profile-info-row">
@@ -60,6 +64,11 @@
                     {{ info_form.father_name }}
                     {% if info_form.father_name.errors %}<span class="field-error">{{ info_form.father_name.errors.0 }}</span>{% endif %}
                 </div>
+                <div class="form-group">
+                    <label>Subject Group (Qrup)</label>
+                    {{ info_form.subject_group }}
+                    {% if info_form.subject_group.errors %}<span class="field-error">{{ info_form.subject_group.errors.0 }}</span>{% endif %}
+                </div>
                 <button type="submit" class="btn-primary">Save Info</button>
             </form>
         </div>
@@ -77,6 +86,13 @@
                         {% if profile.ielts_score %}{{ profile.ielts_score }}{% else %}—{% endif %}
                     </span>
                     <span class="score-max">/ 9.0</span>
+                </div>
+                <div class="score-box {% if profile.toefl_score %}score-set{% else %}score-empty{% endif %}">
+                    <span class="score-label">TOEFL</span>
+                    <span class="score-value">
+                        {% if profile.toefl_score %}{{ profile.toefl_score }}{% else %}—{% endif %}
+                    </span>
+                    <span class="score-max">/ 120</span>
                 </div>
                 <div class="score-box {% if profile.sat_score %}score-set{% else %}score-empty{% endif %}">
                     <span class="score-label">SAT</span>
@@ -105,6 +121,11 @@
                     <label>IELTS Score <span class="label-hint">(0.0 – 9.0)</span></label>
                     {{ scores_form.ielts_score }}
                     {% if scores_form.ielts_score.errors %}<span class="field-error">{{ scores_form.ielts_score.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label>TOEFL Score <span class="label-hint">(0 – 120)</span></label>
+                    {{ scores_form.toefl_score }}
+                    {% if scores_form.toefl_score.errors %}<span class="field-error">{{ scores_form.toefl_score.errors.0 }}</span>{% endif %}
                 </div>
                 <div class="form-group">
                     <label>SAT Score <span class="label-hint">(400 – 1600)</span></label>

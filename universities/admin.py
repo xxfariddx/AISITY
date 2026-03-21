@@ -36,8 +36,8 @@ class UniversityAdmin(admin.ModelAdmin):
 
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
-    list_display = ['name', 'university', 'degree_level']
-    list_filter = ['degree_level', 'university']
+    list_display = ['name', 'university', 'degree_level', 'subject_group', 'last_year_score']
+    list_filter = ['degree_level', 'university', 'subject_group', 'language']
     search_fields = ['name', 'university__name']
 
 

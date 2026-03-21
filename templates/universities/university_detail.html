@@ -133,14 +133,45 @@
         {% if faculties %}
         <div class="faculty-grid">
             {% for faculty in faculties %}
-            <div class="faculty-card">
+            <div class="faculty-card faculty-expandable" style="cursor: pointer; position: relative;">
                 <div class="faculty-icon">📖</div>
-                <div class="faculty-info">
-                    <h3>{{ faculty.name }}</h3>
-                    <span class="faculty-degree">{{ faculty.get_degree_level_display }}</span>
+                <div class="faculty-info" style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin:0 0 5px 0;">{{ faculty.name }}</h3>
+                            <span class="faculty-degree">{{ faculty.get_degree_level_display }}</span>
+                        </div>
+                        <div class="expand-icon" style="color: #6c5ce7; font-size: 1.2rem;">➕</div>
+                    </div>
                     {% if faculty.description %}
-                    <p>{{ faculty.description }}</p>
+                    <p style="margin-top: 10px;">{{ faculty.description }}</p>
                     {% endif %}
+                    
+                    <div class="faculty-details-expand" style="display: none; margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; font-size: 0.95rem;">
+                        <ul style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            {% if faculty.subject_group %}
+                            <li><span style="color: #666;">Subject Group:</span> <strong style="color: #222;">{{ faculty.get_subject_group_display }}</strong></li>
+                            {% endif %}
+                            {% if faculty.last_year_score %}
+                            <li><span style="color: #666;">Min Score (State Order):</span> <strong style="color: #222;">{{ faculty.last_year_score }}</strong></li>
+                            {% endif %}
+                            {% if faculty.last_year_score_paid %}
+                            <li><span style="color: #666;">Min Score (Paid):</span> <strong style="color: #222;">{{ faculty.last_year_score_paid }}</strong></li>
+                            {% endif %}
+                            {% if faculty.deadline %}
+                            <li><span style="color: #666;">Deadline:</span> <strong style="color: #222;">{{ faculty.deadline }}</strong></li>
+                            {% endif %}
+                            {% if faculty.duration %}
+                            <li><span style="color: #666;">Duration:</span> <strong style="color: #222;">{{ faculty.duration }}</strong></li>
+                            {% endif %}
+                            {% if faculty.language %}
+                            <li><span style="color: #666;">Language:</span> <strong style="color: #222;">{{ faculty.language }}</strong></li>
+                            {% endif %}
+                            {% if faculty.state_order_places or faculty.tuition_paid %}
+                            <li><span style="color: #666;">Places/Tuition:</span> <strong style="color: #222;">{{ faculty.payment_display }}</strong></li>
+                            {% endif %}
+                        </ul>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -327,4 +358,25 @@
 
     </div><!-- /reviews-section -->
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ExpandableCards = document.querySelectorAll('.faculty-expandable');
+        ExpandableCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const details = this.querySelector('.faculty-details-expand');
+                const icon = this.querySelector('.expand-icon');
+                if (details) {
+                    if (details.style.display === 'none' || details.style.display === '') {
+                        details.style.display = 'block';
+                        if (icon) icon.textContent = '➖';
+                    } else {
+                        details.style.display = 'none';
+                        if (icon) icon.textContent = '➕';
+                    }
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

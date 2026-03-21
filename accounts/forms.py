@@ -54,9 +54,10 @@ class ProfileInfoForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        fields = ['father_name']
+        fields = ['father_name', 'subject_group']
         widgets = {
             'father_name': forms.TextInput(attrs={'placeholder': "Father's Name"}),
+            'subject_group': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -82,14 +83,16 @@ class ScoresForm(forms.ModelForm):
     """User academic scores."""
     class Meta:
         model = UserProfile
-        fields = ['ielts_score', 'sat_score', 'dim_score']
+        fields = ['ielts_score', 'toefl_score', 'sat_score', 'dim_score']
         widgets = {
             'ielts_score': forms.NumberInput(attrs={'placeholder': '0.0 – 9.0', 'step': '0.5', 'min': '0', 'max': '9'}),
+            'toefl_score': forms.NumberInput(attrs={'placeholder': '0 – 120', 'min': '0', 'max': '120'}),
             'sat_score':   forms.NumberInput(attrs={'placeholder': '400 – 1600', 'min': '400', 'max': '1600'}),
             'dim_score':   forms.NumberInput(attrs={'placeholder': '0 – 700', 'min': '0', 'max': '700'}),
         }
         labels = {
             'ielts_score': 'IELTS Score',
+            'toefl_score': 'TOEFL Score',
             'sat_score':   'SAT Score',
             'dim_score':   'DİM Score',
         }
@@ -98,6 +101,12 @@ class ScoresForm(forms.ModelForm):
         val = self.cleaned_data.get('ielts_score')
         if val is not None and not (0 <= float(val) <= 9):
             raise ValidationError('IELTS score must be between 0.0 and 9.0.')
+        return val
+
+    def clean_toefl_score(self):
+        val = self.cleaned_data.get('toefl_score')
+        if val is not None and not (0 <= val <= 120):
+            raise ValidationError('TOEFL score must be between 0 and 120.')
         return val
 
     def clean_sat_score(self):

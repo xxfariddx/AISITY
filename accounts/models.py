@@ -12,11 +12,19 @@ class UserProfile(models.Model):
         ('azerbaijan', 'Azerbaijan'),
         ('abroad', 'Abroad'),
     ]
+    SUBJECT_GROUP_CHOICES = [
+        ('I', 'I Group'),
+        ('II', 'II Group'),
+        ('III', 'III Group'),
+        ('IV', 'IV Group'),
+        ('V', 'V Group'),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     father_name = models.CharField(max_length=100, blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, blank=True, null=True)
     study_location = models.CharField(max_length=20, choices=STUDY_LOCATION_CHOICES, blank=True, null=True)
+    subject_group = models.CharField(max_length=5, choices=SUBJECT_GROUP_CHOICES, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Academic scores
@@ -24,6 +32,11 @@ class UserProfile(models.Model):
         max_digits=3, decimal_places=1, null=True, blank=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(9.0)],
         help_text='IELTS score between 0.0 and 9.0'
+    )
+    toefl_score = models.IntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(120)],
+        help_text='TOEFL score between 0 and 120'
     )
     sat_score = models.IntegerField(
         null=True, blank=True,

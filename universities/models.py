@@ -79,6 +79,21 @@ class Faculty(models.Model):
         help_text='Annual tuition for fee-paying students (AZN or USD)'
     )
 
+    # New detailed fields for Baku Higher Oil School & others
+    SUBJECT_GROUP_CHOICES = [
+        ('I', 'I Group'),
+        ('II', 'II Group'),
+        ('III', 'III Group'),
+        ('IV', 'IV Group'),
+        ('V', 'V Group'),
+    ]
+    subject_group = models.CharField(max_length=5, choices=SUBJECT_GROUP_CHOICES, null=True, blank=True)
+    last_year_score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True, help_text="State order minimum score (e.g. 672.8)")
+    last_year_score_paid = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True, help_text="Paid minimum score (e.g. 623.2)")
+    deadline = models.DateField(null=True, blank=True, help_text="Application Deadline")
+    duration = models.CharField(max_length=50, null=True, blank=True, help_text="e.g. 4 years, 5 years")
+    language = models.CharField(max_length=50, null=True, blank=True, help_text="e.g. English, Azerbaijani")
+
     class Meta:
         verbose_name_plural = 'Faculties'
         ordering = ['name']
